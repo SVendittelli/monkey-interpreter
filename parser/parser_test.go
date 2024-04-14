@@ -319,6 +319,10 @@ func TestOperatorPrecedenceParsing(t *testing.T) {
 			"(2 / (5 + 5))",
 		},
 		{
+			"(5 + 5) * 2 * (5 + 5)",
+			"(((5 + 5) * 2) * (5 + 5))",
+		},
+		{
 			"-(5 + 5)",
 			"(-(5 + 5))",
 		},
@@ -524,7 +528,7 @@ func TestFunctionLiteralParsing(t *testing.T) {
 	}
 
 	if len(function.Parameters) != 2 {
-		t.Fatalf("function literal oarameters wrong. want 2 got=%d\n", len(function.Parameters))
+		t.Fatalf("function literal parameters wrong. want 2, got=%d\n", len(function.Parameters))
 	}
 
 	testLiteralExpression(t, function.Parameters[0], "x")
@@ -573,7 +577,7 @@ func TestFunctionParameterParsing(t *testing.T) {
 }
 
 func TestCallExpressionParsing(t *testing.T) {
-	input := "add(1, 2 * 3, 4 + 5)"
+	input := "add(1, 2 * 3, 4 + 5);"
 
 	l := lexer.New(input)
 	p := New(l)
@@ -680,32 +684,6 @@ func TestStringLiteralExpression(t *testing.T) {
 	if literal.Value != "hello world" {
 		t.Errorf("literal.Value not %q. got=%q", "hello world", literal.Value)
 	}
-}
-
-func testLetStatement(t *testing.T, s ast.Statement, name string) bool {
-	if s.TokenLiteral() != "let" {
-		t.Errorf("s.TokenLiteral not 'let'. got=%q", s.TokenLiteral())
-		return false
-	}
-
-	letStmt, ok := s.(*ast.LetStatement)
-	if !ok {
-		t.Errorf("s not *ast.LetStatement. got=%T", s)
-		return false
-	}
-
-	if letStmt.Name.Value != name {
-		t.Errorf("letStmt.Name.Value not '%s'. got=%s", name, letStmt.Name.Value)
-		return false
-	}
-
-	if letStmt.Name.TokenLiteral() != name {
-		t.Errorf("letStmt.Name.TokenLiteral() not '%s'. got=%s",
-			name, letStmt.Name.TokenLiteral())
-		return false
-	}
-
-	return true
 }
 
 func TestParsingEmptyArrayLiterals(t *testing.T) {
@@ -947,6 +925,32 @@ func TestParsingHashLiteralsWithExpressions(t *testing.T) {
 	}
 }
 
+func testLetStatement(t *testing.T, s ast.Statement, name string) bool {
+	if s.TokenLiteral() != "let" {
+		t.Errorf("s.TokenLiteral not 'let'. got=%q", s.TokenLiteral())
+		return false
+	}
+
+	letStmt, ok := s.(*ast.LetStatement)
+	if !ok {
+		t.Errorf("s not *ast.LetStatement. got=%T", s)
+		return false
+	}
+
+	if letStmt.Name.Value != name {
+		t.Errorf("letStmt.Name.Value not '%s'. got=%s", name, letStmt.Name.Value)
+		return false
+	}
+
+	if letStmt.Name.TokenLiteral() != name {
+		t.Errorf("letStmt.Name.TokenLiteral() not '%s'. got=%s",
+			name, letStmt.Name.TokenLiteral())
+		return false
+	}
+
+	return true
+}
+
 func testInfixExpression(t *testing.T, exp ast.Expression, left interface{},
 	operator string, right interface{},
 ) bool {
@@ -1039,15 +1043,18 @@ func testBooleanLiteral(t *testing.T, exp ast.Expression, value bool) bool {
 		t.Errorf("exp not *ast.Boolean. got=%T", exp)
 		return false
 	}
+
 	if bo.Value != value {
 		t.Errorf("bo.Value not %t. got=%t", value, bo.Value)
 		return false
 	}
+
 	if bo.TokenLiteral() != fmt.Sprintf("%t", value) {
 		t.Errorf("bo.TokenLiteral not %t. got=%s",
 			value, bo.TokenLiteral())
 		return false
 	}
+
 	return true
 }
 

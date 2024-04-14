@@ -1,8 +1,9 @@
 package ast
 
 import (
-	"github.com/SVendittelli/monkey-interpreter/token"
 	"testing"
+
+	"github.com/SVendittelli/monkey-interpreter/token"
 )
 
 func TestString(t *testing.T) {
@@ -21,6 +22,7 @@ func TestString(t *testing.T) {
 			},
 		},
 	}
+
 	if program.String() != "let myVar = anotherVar;" {
 		t.Errorf("program.String() wrong. got=%q", program.String())
 	}

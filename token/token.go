@@ -2,11 +2,6 @@ package token
 
 type TokenType string
 
-type Token struct {
-	Type    TokenType
-	Literal string
-}
-
 const (
 	ILLEGAL = "ILLEGAL"
 	EOF     = "EOF"
@@ -14,7 +9,7 @@ const (
 	// Identifiers + literals
 	IDENT  = "IDENT"  // add, foobar, x, y, ...
 	INT    = "INT"    // 1343456
-	STRING = "STRING" // "foo", "bar", ...
+	STRING = "STRING" // "foobar"
 
 	// Operators
 	ASSIGN   = "="
@@ -52,6 +47,11 @@ const (
 	RETURN   = "RETURN"
 )
 
+type Token struct {
+	Type    TokenType
+	Literal string
+}
+
 var keywords = map[string]TokenType{
 	"fn":     FUNCTION,
 	"let":    LET,
@@ -62,8 +62,8 @@ var keywords = map[string]TokenType{
 	"return": RETURN,
 }
 
-func LookupIdent(indent string) TokenType {
-	if tok, ok := keywords[indent]; ok {
+func LookupIdent(ident string) TokenType {
+	if tok, ok := keywords[ident]; ok {
 		return tok
 	}
 	return IDENT

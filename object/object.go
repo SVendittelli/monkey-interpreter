@@ -12,16 +12,20 @@ import (
 type ObjectType string
 
 const (
-	BOOLEAN_OBJ      = "BOOLEAN"
-	INTEGER_OBJ      = "INTEGER"
-	NULL_OBJ         = "NULL"
-	ERROR_OBJ        = "ERROR"
+	NULL_OBJ  = "NULL"
+	ERROR_OBJ = "ERROR"
+
+	INTEGER_OBJ = "INTEGER"
+	BOOLEAN_OBJ = "BOOLEAN"
+	STRING_OBJ  = "STRING"
+
 	RETURN_VALUE_OBJ = "RETURN_VALUE"
-	FUNCTION_OBJ     = "FUNCTION"
-	STRING_OBJ       = "STRING"
-	BUILTIN_OBJ      = "BUILTIN"
-	ARRAY_OBJ        = "ARRAY"
-	HASH_OBJ         = "HASH"
+
+	FUNCTION_OBJ = "FUNCTION"
+	BUILTIN_OBJ  = "BUILTIN"
+
+	ARRAY_OBJ = "ARRAY"
+	HASH_OBJ  = "HASH"
 )
 
 type Object interface {
@@ -29,14 +33,17 @@ type Object interface {
 	Inspect() string
 }
 
-type Hashable interface {
-	HashKey() HashKey
+type Null struct{}
+
+func (n *Null) Type() ObjectType { return NULL_OBJ }
+func (n *Null) Inspect() string  { return "null" }
+
+type Error struct {
+	Message string
 }
 
-type HashKey struct {
-	Type  ObjectType
-	Value uint64
-}
+func (e *Error) Type() ObjectType { return ERROR_OBJ }
+func (e *Error) Inspect() string  { return "ERROR: " + e.Message }
 
 type Boolean struct {
 	Value bool
@@ -66,17 +73,18 @@ func (i *Integer) HashKey() HashKey {
 	return HashKey{Type: i.Type(), Value: uint64(i.Value)}
 }
 
-type Null struct{}
-
-func (n *Null) Type() ObjectType { return NULL_OBJ }
-func (n *Null) Inspect() string  { return "null" }
-
-type Error struct {
-	Message string
+type String struct {
+	Value string
 }
 
-func (e *Error) Type() ObjectType { return ERROR_OBJ }
-func (e *Error) Inspect() string  { return "ERROR: " + e.Message }
+func (s *String) Type() ObjectType { return STRING_OBJ }
+func (s *String) Inspect() string  { return s.Value }
+func (s *String) HashKey() HashKey {
+	h := fnv.New64a()
+	h.Write([]byte(s.Value))
+
+	return HashKey{Type: s.Type(), Value: h.Sum64()}
+}
 
 type ReturnValue struct {
 	Value Object
@@ -110,19 +118,6 @@ func (f *Function) Inspect() string {
 	return out.String()
 }
 
-type String struct {
-	Value string
-}
-
-func (s *String) Type() ObjectType { return STRING_OBJ }
-func (s *String) Inspect() string  { return s.Value }
-func (s *String) HashKey() HashKey {
-	h := fnv.New64a()
-	h.Write([]byte(s.Value))
-
-	return HashKey{Type: s.Type(), Value: h.Sum64()}
-}
-
 type BuiltinFunction func(args ...Object) Object
 
 type Builtin struct {
@@ -152,13 +147,21 @@ func (ao *Array) Inspect() string {
 	return out.String()
 }
 
-type Hash struct {
-	Pairs map[HashKey]HashPair
+type HashKey struct {
+	Type  ObjectType
+	Value uint64
 }
 
+type Hashable interface {
+	HashKey() HashKey
+}
 type HashPair struct {
 	Key   Object
 	Value Object
+}
+
+type Hash struct {
+	Pairs map[HashKey]HashPair
 }
 
 func (h *Hash) Type() ObjectType { return HASH_OBJ }

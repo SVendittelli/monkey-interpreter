@@ -49,7 +49,7 @@ func (p *Program) String() string {
 
 // Statements
 type LetStatement struct {
-	Token token.Token
+	Token token.Token // the token.LET token
 	Name  *Identifier
 	Value Expression
 }
@@ -68,11 +68,12 @@ func (ls *LetStatement) String() string {
 	}
 
 	out.WriteString(";")
+
 	return out.String()
 }
 
 type ReturnStatement struct {
-	Token       token.Token // the token.RETURN token
+	Token       token.Token // the 'return' token
 	ReturnValue Expression
 }
 
@@ -88,6 +89,7 @@ func (rs *ReturnStatement) String() string {
 	}
 
 	out.WriteString(";")
+
 	return out.String()
 }
 
@@ -170,7 +172,7 @@ func (pe *PrefixExpression) String() string {
 }
 
 type InfixExpression struct {
-	Token    token.Token // The operator token
+	Token    token.Token // The operator token, e.g. +
 	Left     Expression
 	Operator string
 	Right    Expression
@@ -180,11 +182,13 @@ func (ie *InfixExpression) expressionNode()      {}
 func (ie *InfixExpression) TokenLiteral() string { return ie.Token.Literal }
 func (ie *InfixExpression) String() string {
 	var out bytes.Buffer
+
 	out.WriteString("(")
 	out.WriteString(ie.Left.String())
 	out.WriteString(" " + ie.Operator + " ")
 	out.WriteString(ie.Right.String())
 	out.WriteString(")")
+
 	return out.String()
 }
 
@@ -272,7 +276,7 @@ func (sl *StringLiteral) TokenLiteral() string { return sl.Token.Literal }
 func (sl *StringLiteral) String() string       { return sl.Token.Literal }
 
 type ArrayLiteral struct {
-	Token    token.Token
+	Token    token.Token // the '[' token
 	Elements []Expression
 }
 
