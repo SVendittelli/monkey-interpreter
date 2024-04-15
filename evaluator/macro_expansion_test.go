@@ -3,10 +3,10 @@ package evaluator
 import (
 	"testing"
 
-	"github.com/SVendittelli/monkey-interpreter/ast"
-	"github.com/SVendittelli/monkey-interpreter/lexer"
-	"github.com/SVendittelli/monkey-interpreter/object"
-	"github.com/SVendittelli/monkey-interpreter/parser"
+	"github.com/SVendittelli/monkey/ast"
+	"github.com/SVendittelli/monkey/lexer"
+	"github.com/SVendittelli/monkey/object"
+	"github.com/SVendittelli/monkey/parser"
 )
 
 func TestDefineMacros(t *testing.T) {

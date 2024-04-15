@@ -1,8 +1,8 @@
 package evaluator
 
 import (
-	"github.com/SVendittelli/monkey-interpreter/ast"
-	"github.com/SVendittelli/monkey-interpreter/object"
+	"github.com/SVendittelli/monkey/ast"
+	"github.com/SVendittelli/monkey/object"
 )
 
 // DefineMacros does two thinds: finding macro definitions in and removing them

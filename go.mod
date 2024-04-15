@@ -1,3 +1,3 @@
-module github.com/SVendittelli/monkey-interpreter
+module github.com/SVendittelli/monkey
 
 go 1.21.6
