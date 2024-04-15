@@ -62,3 +62,81 @@ func addMacro(stmt ast.Statement, env *object.Environment) {
 
 	env.Set(letStatement.Name.Value, macro)
 }
+
+// Recursively walk down the `program` AST and find calls to macros, quote their
+// arguments, extend their environments with the args, evaluate the result and
+// finally modify the AST to replace the macro call with the quoted AST node.
+func ExpandMacros(program ast.Node, env *object.Environment) ast.Node {
+	return ast.Modify(program, func(node ast.Node) ast.Node {
+		callExpression, ok := node.(*ast.CallExpression)
+		if !ok {
+			return node
+		}
+
+		macro, ok := isMacroCall(callExpression, env)
+		if !ok {
+			return node
+		}
+
+		args := quoteArgs(callExpression)
+		evalEnv := extendMacroEnv(macro, args)
+
+		evaluated := Eval(macro.Body, evalEnv)
+
+		quote, ok := evaluated.(*object.Quote)
+		if !ok {
+			panic("we only support returning AST-nodes from macros")
+		}
+
+		return quote.Node
+	})
+}
+
+// Check if a call expression is a macro.
+func isMacroCall(
+	exp *ast.CallExpression,
+	env *object.Environment,
+) (*object.Macro, bool) {
+	identifier, ok := exp.Function.(*ast.Identifier)
+	if !ok {
+		return nil, false
+	}
+
+	obj, ok := env.Get(identifier.Value)
+	if !ok {
+		return nil, false
+	}
+
+	macro, ok := obj.(*object.Macro)
+	if !ok {
+		return nil, false
+	}
+
+	return macro, true
+}
+
+// Take the arguments from a call and turn them into `Quotes`.
+func quoteArgs(exp *ast.CallExpression) []*object.Quote {
+	args := []*object.Quote{}
+
+	for _, a := range exp.Arguments {
+		args = append(args, &object.Quote{Node: a})
+	}
+
+	return args
+}
+
+// Extend the macro's environment with the arguments of the call bound to the
+// parameter names of the macro literal.
+func extendMacroEnv(
+	macro *object.Macro,
+	args []*object.Quote,
+) *object.Environment {
+	extended := object.NewEnclosedEnvironment(macro.Env)
+
+	for paramIdx, param := range macro.Parameters {
+		extended.Set(param.Value, args[paramIdx])
+	}
+
+	return extended
+}
